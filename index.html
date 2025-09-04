@@ -2,12 +2,29 @@
 <html>
 <head>
   <title>AI Token Scanner</title>
-  <style>
-    body { font-family: Arial; text-align: center; padding: 50px; }
-    #avatar { width: 200px; height: 200px; background: #ccc; border-radius: 50%; margin: auto; }
-    #chat { margin-top: 20px; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto; }
-    #inputBox { width: 300px; padding: 10px; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+  }
+  #chat {
+    max-width: 95%;
+    margin: auto;
+    word-wrap: break-word; /* fixes long text overflow */
+  }
+  .token-card {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin: 10px auto;
+    border-radius: 12px;
+    background: #f9f9f9;
+    text-align: left;
+    max-width: 400px; /* keeps it mobile friendly */
+  }
+</style>
 </head>
 <body>
   <h1>AI Token Scanner</h1>
@@ -36,10 +53,10 @@
         const symbol = pair.baseToken.symbol;
         const price = pair.priceUsd;
         const liquidity = pair.liquidity?.usd ?? "N/A";
-        const mc = pair.fdv ?? "N/A";
+        const mcc = pair.fdv ?? "N/A";
 
         chat.innerHTML += `
-          <div style="border:1px solid #ddd; padding:10px; margin:10px; border-radius:10px; background:#f9f9f9; text-align:left;">
+          <div class="token-card">
             <b>${name} (${symbol})</b><br>
             💵 <b>Price:</b> $${price}<br>
             📊 <b>Market Cap:</b> $${mc}<br>
