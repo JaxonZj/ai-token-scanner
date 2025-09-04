@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Token Scanner</title>
+  <style>
+    body { font-family: Arial; text-align: center; padding: 50px; }
+    #avatar { width: 200px; height: 200px; background: #ccc; border-radius: 50%; margin: auto; }
+    #chat { margin-top: 20px; }
+    #inputBox { width: 300px; padding: 10px; }
+  </style>
+</head>
+<body>
+  <h1>AI Token Scanner</h1>
+  <div id="avatar">🤖</div>
+  <div id="chat"></div>
+  <input id="inputBox" placeholder="Enter token address">
+  <button onclick="sendToken()">Scan Token</button>
+
+  <script>
+    function sendToken() {
+      const token = document.getElementById('inputBox').value;
+      const chat = document.getElementById('chat');
+      chat.innerHTML += "<p><b>You:</b> " + token + "</p>";
+      chat.innerHTML += "<p><b>AI:</b> Scanning token... (Coming soon)</p>";
+      document.getElementById('inputBox').value = "";
+    }
+  </script>
+</body>
+</html>
