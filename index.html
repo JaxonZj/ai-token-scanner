@@ -94,40 +94,40 @@
 
     button:hover {
       background: #6a78ff;
+    }
 
-      /* Idle pulsing */
-#avatar {
-  font-size: 60px;
-  margin: 20px auto;
-  display: inline-block;
-  animation: pulseRotate 4s infinite ease-in-out;
-}
+    /* Avatar idle pulsing */
+    #avatar {
+      font-size: 60px;
+      margin: 20px auto;
+      display: inline-block;
+      animation: pulseRotate 4s infinite ease-in-out;
+    }
 
-@keyframes pulseRotate {
-  0% { transform: scale(1) rotate(0deg); }
-  25% { transform: scale(1.1) rotate(5deg); }
-  50% { transform: scale(1) rotate(0deg); }
-  75% { transform: scale(1.1) rotate(-5deg); }
-  100% { transform: scale(1) rotate(0deg); }
-}
+    @keyframes pulseRotate {
+      0% { transform: scale(1) rotate(0deg); }
+      25% { transform: scale(1.1) rotate(5deg); }
+      50% { transform: scale(1) rotate(0deg); }
+      75% { transform: scale(1.1) rotate(-5deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
 
-/* Active scanning state */
-.scanning {
-  animation: scanShake 0.4s infinite, glow 1s infinite alternate;
-}
+    /* Active scanning state */
+    .scanning {
+      animation: scanShake 0.4s infinite, glow 1s infinite alternate;
+    }
 
-@keyframes scanShake {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  50% { transform: translateX(5px); }
-  75% { transform: translateX(-5px); }
-  100% { transform: translateX(0); }
-}
+    @keyframes scanShake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
+      100% { transform: translateX(0); }
+    }
 
-@keyframes glow {
-  from { text-shadow: 0 0 5px #4e5dff, 0 0 10px #4e5dff; }
-  to { text-shadow: 0 0 20px #00ffd5, 0 0 30px #00ffd5; }
-      }
+    @keyframes glow {
+      from { text-shadow: 0 0 5px #4e5dff, 0 0 10px #4e5dff; }
+      to { text-shadow: 0 0 20px #00ffd5, 0 0 30px #00ffd5; }
     }
   </style>
 </head>
@@ -149,52 +149,52 @@
   }
 
   async function sendToken() {
-  const token = document.getElementById('inputBox').value.trim();
-  const chat = document.getElementById('chat');
-  const avatar = document.getElementById('avatar');
+    const token = document.getElementById('inputBox').value.trim();
+    const chat = document.getElementById('chat');
+    const avatar = document.getElementById('avatar');
 
-  if (!token) return;
+    if (!token) return;
 
-  chat.innerHTML += `<div><b>You:</b> ${token}</div>`;
-  chat.innerHTML += `<div><b>AI:</b> 🔎 Scanning token...</div>`;
+    chat.innerHTML += `<div><b>You:</b> ${token}</div>`;
+    chat.innerHTML += `<div><b>AI:</b> 🔎 Scanning token...</div>`;
 
-  // Start scanning animation
-  avatar.classList.add("scanning");
+    // Start scanning animation
+    avatar.classList.add("scanning");
 
-  try {
-    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`);
-    const data = await res.json();
+    try {
+      const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`);
+      const data = await res.json();
 
-    if (data.pairs && data.pairs.length > 0) {
-      const pair = data.pairs[0];
-      const name = pair.baseToken.name;
-      const symbol = pair.baseToken.symbol;
-      const price = pair.priceUsd;
-      const liquidity = pair.liquidity?.usd ?? "N/A";
-      const mc = pair.fdv ?? "N/A";
-      const chartUrl = pair.url;
-      const logo = pair.info?.imageUrl || "https://cryptologos.cc/logos/placeholder.png";
+      if (data.pairs && data.pairs.length > 0) {
+        const pair = data.pairs[0];
+        const name = pair.baseToken.name;
+        const symbol = pair.baseToken.symbol;
+        const price = pair.priceUsd;
+        const liquidity = pair.liquidity?.usd ?? "N/A";
+        const mc = pair.fdv ?? "N/A";
+        const chartUrl = pair.url;
+        const logo = pair.info?.imageUrl || "https://cryptologos.cc/logos/placeholder.png";
 
-      chat.innerHTML += `
-        <div class="token-card">
-          <img src="${logo}" alt="${symbol} logo">
-          <h2>${name} (${symbol})</h2>
-          <p class="stat price">💵 <b>Price:</b> $${price}</p>
-          <p class="stat mc">📊 <b>Market Cap:</b> $${formatNumber(mc)}</p>
-          <p class="stat liq">💧 <b>Liquidity:</b> $${formatNumber(liquidity)}</p>
-          <a class="chart-btn" href="${chartUrl}" target="_blank">📈 View Chart</a>
-        </div>`;
-    } else {
-      chat.innerHTML += "<div><b>AI:</b> ❌ Couldn’t find this token.</div>";
+        chat.innerHTML += `
+          <div class="token-card">
+            <img src="${logo}" alt="${symbol} logo">
+            <h2>${name} (${symbol})</h2>
+            <p class="stat price">💵 <b>Price:</b> $${price}</p>
+            <p class="stat mc">📊 <b>Market Cap:</b> $${formatNumber(mc)}</p>
+            <p class="stat liq">💧 <b>Liquidity:</b> $${formatNumber(liquidity)}</p>
+            <a class="chart-btn" href="${chartUrl}" target="_blank">📈 View Chart</a>
+          </div>`;
+      } else {
+        chat.innerHTML += "<div><b>AI:</b> ❌ Couldn’t find this token.</div>";
+      }
+    } catch (err) {
+      chat.innerHTML += "<div><b>AI:</b> ⚠️ Error fetching data.</div>";
     }
-  } catch (err) {
-    chat.innerHTML += "<div><b>AI:</b> ⚠️ Error fetching data.</div>";
+
+    // Stop scanning animation
+    avatar.classList.remove("scanning");
+    document.getElementById('inputBox').value = "";
   }
-
-  // Stop scanning animation
-  avatar.classList.remove("scanning");
-  document.getElementById('inputBox').value = "";
-    }
   </script>
 </body>
 </html>
