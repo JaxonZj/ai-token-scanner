@@ -34,34 +34,40 @@
 
     .user {
       justify-content: flex-end;
+      margin-left: auto;
     }
 
     .user .bubble {
-  background: #4e5dff;
-  color: #fff;
-  border-radius: 16px 16px 4px 16px;
-  padding: 10px 14px;
-  box-shadow: 0 0 10px rgba(78,93,255,0.5);
-  word-break: break-all;
-  white-space: pre-wrap;
-}
+      background: #4e5dff;
+      color: #fff;
+      border-radius: 16px 16px 4px 16px;
+      padding: 10px 14px;
+      box-shadow: 0 0 10px rgba(78,93,255,0.5);
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
 
-.ai .bubble {
-  background: linear-gradient(135deg, #1c1c2b, #2a2a40);
-  color: #00ffd5;
-  border-radius: 16px 16px 16px 4px;
-  padding: 10px 14px;
-  box-shadow: 0 0 10px rgba(0,255,213,0.4);
-  word-break: break-all;
-  white-space: pre-wrap;
-}
+    .ai {
+      justify-content: flex-start;
+      margin-right: auto;
+    }
+
+    .ai .bubble {
+      background: linear-gradient(135deg, #1c1c2b, #2a2a40);
+      color: #00ffd5;
+      border-radius: 16px 16px 16px 4px;
+      padding: 10px 14px;
+      box-shadow: 0 0 10px rgba(0,255,213,0.4);
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
 
     .token-card {
       background: linear-gradient(135deg, #1c1c2b, #2a2a40);
       border: 2px solid #4e5dff;
       border-radius: 20px;
       padding: 20px;
-      margin: 20px auto;
+      margin: 10px 0;
       max-width: 420px;
       text-align: center;
       box-shadow: 0 0 20px rgba(78, 93, 255, 0.4);
@@ -202,10 +208,13 @@
 
       if (!token) return;
 
+      // User bubble (right)
       chat.innerHTML += `
         <div class="chat-message user">
           <div class="bubble">${token}</div>
         </div>`;
+      
+      // AI bubble (left)
       chat.innerHTML += `
         <div class="chat-message ai">
           <div class="bubble">🔎 Scanning token...</div>
@@ -228,17 +237,16 @@
           const chartUrl = pair.url;
           const logo = pair.info?.imageUrl || "https://cryptologos.cc/logos/placeholder.png";
 
+          // AI token card (separate, not in bubble)
           chat.innerHTML += `
             <div class="chat-message ai">
-              <div class="bubble">
-                <div class="token-card">
-                  <img src="${logo}" alt="${symbol} logo">
-                  <h2>${name} (${symbol})</h2>
-                  <p class="stat price">💵 <b>Price:</b> $${price}</p>
-                  <p class="stat mc">📊 <b>Market Cap:</b> $${formatNumber(mc)}</p>
-                  <p class="stat liq">💧 <b>Liquidity:</b> $${formatNumber(liquidity)}</p>
-                  <a class="chart-btn" href="${chartUrl}" target="_blank">📈 View Chart</a>
-                </div>
+              <div class="token-card">
+                <img src="${logo}" alt="${symbol} logo">
+                <h2>${name} (${symbol})</h2>
+                <p class="stat price">💵 <b>Price:</b> $${price}</p>
+                <p class="stat mc">📊 <b>Market Cap:</b> $${formatNumber(mc)}</p>
+                <p class="stat liq">💧 <b>Liquidity:</b> $${formatNumber(liquidity)}</p>
+                <a class="chart-btn" href="${chartUrl}" target="_blank">📈 View Chart</a>
               </div>
             </div>`;
         } else {
@@ -260,4 +268,4 @@
     }
   </script>
 </body>
-</html>
+  </html>
