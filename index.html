@@ -8,15 +8,21 @@
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
-      text-align: center;
       background: #0f0f1a;
       color: #fff;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
     }
 
     #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
       max-width: 95%;
       margin: auto;
       word-wrap: break-word;
+      scroll-behavior: smooth;
     }
 
     .token-card {
@@ -52,10 +58,7 @@
       box-shadow: 0 0 12px rgba(78, 93, 255, 0.6);
     }
 
-    .stat {
-      font-size: 18px;
-      margin: 6px 0;
-    }
+    .stat { font-size: 18px; margin: 6px 0; }
     .price { color: #4eff9c; }
     .mc { color: #ff5dff; }
     .liq { color: #5dc1ff; }
@@ -77,15 +80,27 @@
       box-shadow: 0 0 15px rgba(106,120,255,0.7);
     }
 
-    input, button {
+    #inputArea {
+      display: flex;
       padding: 10px;
-      margin-top: 10px;
+      background: #1c1c2b;
+      border-top: 2px solid #4e5dff;
+    }
+
+    #inputBox {
+      flex: 1;
+      padding: 10px;
       border-radius: 8px;
       border: none;
       outline: none;
+      margin-right: 10px;
     }
 
     button {
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
       background: #4e5dff;
       color: white;
       cursor: pointer;
@@ -96,7 +111,6 @@
       background: #6a78ff;
     }
 
-    /* Avatar idle pulsing */
     #avatar {
       font-size: 60px;
       margin: 20px auto;
@@ -112,7 +126,6 @@
       100% { transform: scale(1) rotate(0deg); }
     }
 
-    /* Active scanning state */
     .scanning {
       animation: scanShake 0.4s infinite, glow 1s infinite alternate;
     }
@@ -132,69 +145,72 @@
   </style>
 </head>
 <body>
-  <h1>🤖 AI Token Scanner</h1>
+  <h1 style="text-align:center;">🤖 AI Token Scanner</h1>
   <div id="avatar">🔎</div>
   <div id="chat"></div>
-  <input id="inputBox" placeholder="Enter token address">
-  <button onclick="sendToken()">Scan Token</button>
+
+  <div id="inputArea">
+    <input id="inputBox" placeholder="Enter token address">
+    <button onclick="sendToken()">Scan</button>
+  </div>
 
   <script>
-  function formatNumber(num) {
-    if (num === "N/A") return num;
-    num = Number(num);
-    if (num >= 1e9) return (num / 1e9).toFixed(2) + "B";
-    if (num >= 1e6) return (num / 1e6).toFixed(2) + "M";
-    if (num >= 1e3) return (num / 1e3).toFixed(2) + "k";
-    return num.toString();
-  }
-
-  async function sendToken() {
-    const token = document.getElementById('inputBox').value.trim();
-    const chat = document.getElementById('chat');
-    const avatar = document.getElementById('avatar');
-
-    if (!token) return;
-
-    chat.innerHTML += `<div><b>You:</b> ${token}</div>`;
-    chat.innerHTML += `<div><b>AI:</b> 🔎 Scanning token...</div>`;
-
-    // Start scanning animation
-    avatar.classList.add("scanning");
-
-    try {
-      const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`);
-      const data = await res.json();
-
-      if (data.pairs && data.pairs.length > 0) {
-        const pair = data.pairs[0];
-        const name = pair.baseToken.name;
-        const symbol = pair.baseToken.symbol;
-        const price = pair.priceUsd;
-        const liquidity = pair.liquidity?.usd ?? "N/A";
-        const mc = pair.fdv ?? "N/A";
-        const chartUrl = pair.url;
-        const logo = pair.info?.imageUrl || "https://cryptologos.cc/logos/placeholder.png";
-
-        chat.innerHTML += `
-          <div class="token-card">
-            <img src="${logo}" alt="${symbol} logo">
-            <h2>${name} (${symbol})</h2>
-            <p class="stat price">💵 <b>Price:</b> $${price}</p>
-            <p class="stat mc">📊 <b>Market Cap:</b> $${formatNumber(mc)}</p>
-            <p class="stat liq">💧 <b>Liquidity:</b> $${formatNumber(liquidity)}</p>
-            <a class="chart-btn" href="${chartUrl}" target="_blank">📈 View Chart</a>
-          </div>`;
-      } else {
-        chat.innerHTML += "<div><b>AI:</b> ❌ Couldn’t find this token.</div>";
-      }
-    } catch (err) {
-      chat.innerHTML += "<div><b>AI:</b> ⚠️ Error fetching data.</div>";
+    function formatNumber(num) {
+      if (num === "N/A") return num;
+      num = Number(num);
+      if (num >= 1e9) return (num / 1e9).toFixed(2) + "B";
+      if (num >= 1e6) return (num / 1e6).toFixed(2) + "M";
+      if (num >= 1e3) return (num / 1e3).toFixed(2) + "k";
+      return num.toString();
     }
 
-    // Stop scanning animation
-    avatar.classList.remove("scanning");
-    document.getElementById('inputBox').value = "";
-  }
+    async function sendToken() {
+      const token = document.getElementById('inputBox').value.trim();
+      const chat = document.getElementById('chat');
+      const avatar = document.getElementById('avatar');
+
+      if (!token) return;
+
+      chat.innerHTML += `<div><b>You:</b> ${token}</div>`;
+      chat.innerHTML += `<div><b>AI:</b> 🔎 Scanning token...</div>`;
+      chat.scrollTop = chat.scrollHeight;
+
+      avatar.classList.add("scanning");
+
+      try {
+        const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`);
+        const data = await res.json();
+
+        if (data.pairs && data.pairs.length > 0) {
+          const pair = data.pairs[0];
+          const name = pair.baseToken.name;
+          const symbol = pair.baseToken.symbol;
+          const price = pair.priceUsd;
+          const liquidity = pair.liquidity?.usd ?? "N/A";
+          const mc = pair.fdv ?? "N/A";
+          const chartUrl = pair.url;
+          const logo = pair.info?.imageUrl || "https://cryptologos.cc/logos/placeholder.png";
+
+          chat.innerHTML += `
+            <div class="token-card">
+              <img src="${logo}" alt="${symbol} logo">
+              <h2>${name} (${symbol})</h2>
+              <p class="stat price">💵 <b>Price:</b> $${price}</p>
+              <p class="stat mc">📊 <b>Market Cap:</b> $${formatNumber(mc)}</p>
+              <p class="stat liq">💧 <b>Liquidity:</b> $${formatNumber(liquidity)}</p>
+              <a class="chart-btn" href="${chartUrl}" target="_blank">📈 View Chart</a>
+            </div>`;
+        } else {
+          chat.innerHTML += "<div><b>AI:</b> ❌ Couldn’t find this token.</div>";
+        }
+      } catch (err) {
+        chat.innerHTML += "<div><b>AI:</b> ⚠️ Error fetching data.</div>";
+      }
+
+      avatar.classList.remove("scanning");
+      chat.scrollTop = chat.scrollHeight;
+      document.getElementById('inputBox').value = "";
+    }
   </script>
 </body>
 </html>
