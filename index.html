@@ -5,7 +5,7 @@
   <style>
     body { font-family: Arial; text-align: center; padding: 50px; }
     #avatar { width: 200px; height: 200px; background: #ccc; border-radius: 50%; margin: auto; }
-    #chat { margin-top: 20px; }
+    #chat { margin-top: 20px; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto; }
     #inputBox { width: 300px; padding: 10px; }
   </style>
 </head>
@@ -17,11 +17,38 @@
   <button onclick="sendToken()">Scan Token</button>
 
   <script>
-    function sendToken() {
-      const token = document.getElementById('inputBox').value;
+    async function sendToken() {
+      const token = document.getElementById('inputBox').value.trim();
       const chat = document.getElementById('chat');
+
+      if (!token) return;
+
       chat.innerHTML += "<p><b>You:</b> " + token + "</p>";
-      chat.innerHTML += "<p><b>AI:</b> Scanning token... (Coming soon)</p>";
+      chat.innerHTML += "<p><b>AI:</b> Scanning token...</p>";
+
+      try {
+        const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`);
+        const data = await res.json();
+
+        if (data.pairs && data.pairs.length > 0) {
+          const pair = data.pairs[0];
+          const name = pair.baseToken.name;
+          const symbol = pair.baseToken.symbol;
+          const price = pair.priceUsd;
+          const liquidity = pair.liquidity.usd;
+          const mc = pair.fdv;
+
+          chat.innerHTML += `<p><b>AI:</b> Found <b>${name} (${symbol})</b><br>
+            💵 Price: $${price}<br>
+            📊 Market Cap: $${mc}<br>
+            💧 Liquidity: $${liquidity}</p>`;
+        } else {
+          chat.innerHTML += "<p><b>AI:</b> Couldn’t find this token.</p>";
+        }
+      } catch (err) {
+        chat.innerHTML += "<p><b>AI:</b> Error fetching data.</p>";
+      }
+
       document.getElementById('inputBox').value = "";
     }
   </script>
