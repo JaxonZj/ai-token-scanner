@@ -25,6 +25,37 @@
       scroll-behavior: smooth;
     }
 
+    /* Chat bubbles */
+    .chat-message {
+      display: flex;
+      margin: 8px 0;
+      max-width: 80%;
+    }
+
+    .user {
+      justify-content: flex-end;
+    }
+
+    .user .bubble {
+      background: #4e5dff;
+      color: #fff;
+      border-radius: 16px 16px 4px 16px;
+      padding: 10px 14px;
+      box-shadow: 0 0 10px rgba(78,93,255,0.5);
+    }
+
+    .ai {
+      justify-content: flex-start;
+    }
+
+    .ai .bubble {
+      background: linear-gradient(135deg, #1c1c2b, #2a2a40);
+      color: #00ffd5;
+      border-radius: 16px 16px 16px 4px;
+      padding: 10px 14px;
+      box-shadow: 0 0 10px rgba(0,255,213,0.4);
+    }
+
     .token-card {
       background: linear-gradient(135deg, #1c1c2b, #2a2a40);
       border: 2px solid #4e5dff;
@@ -171,8 +202,14 @@
 
       if (!token) return;
 
-      chat.innerHTML += `<div><b>You:</b> ${token}</div>`;
-      chat.innerHTML += `<div><b>AI:</b> 🔎 Scanning token...</div>`;
+      chat.innerHTML += `
+        <div class="chat-message user">
+          <div class="bubble">${token}</div>
+        </div>`;
+      chat.innerHTML += `
+        <div class="chat-message ai">
+          <div class="bubble">🔎 Scanning token...</div>
+        </div>`;
       chat.scrollTop = chat.scrollHeight;
 
       avatar.classList.add("scanning");
@@ -192,19 +229,29 @@
           const logo = pair.info?.imageUrl || "https://cryptologos.cc/logos/placeholder.png";
 
           chat.innerHTML += `
-            <div class="token-card">
-              <img src="${logo}" alt="${symbol} logo">
-              <h2>${name} (${symbol})</h2>
-              <p class="stat price">💵 <b>Price:</b> $${price}</p>
-              <p class="stat mc">📊 <b>Market Cap:</b> $${formatNumber(mc)}</p>
-              <p class="stat liq">💧 <b>Liquidity:</b> $${formatNumber(liquidity)}</p>
-              <a class="chart-btn" href="${chartUrl}" target="_blank">📈 View Chart</a>
+            <div class="chat-message ai">
+              <div class="bubble">
+                <div class="token-card">
+                  <img src="${logo}" alt="${symbol} logo">
+                  <h2>${name} (${symbol})</h2>
+                  <p class="stat price">💵 <b>Price:</b> $${price}</p>
+                  <p class="stat mc">📊 <b>Market Cap:</b> $${formatNumber(mc)}</p>
+                  <p class="stat liq">💧 <b>Liquidity:</b> $${formatNumber(liquidity)}</p>
+                  <a class="chart-btn" href="${chartUrl}" target="_blank">📈 View Chart</a>
+                </div>
+              </div>
             </div>`;
         } else {
-          chat.innerHTML += "<div><b>AI:</b> ❌ Couldn’t find this token.</div>";
+          chat.innerHTML += `
+            <div class="chat-message ai">
+              <div class="bubble">❌ Couldn’t find this token.</div>
+            </div>`;
         }
       } catch (err) {
-        chat.innerHTML += "<div><b>AI:</b> ⚠️ Error fetching data.</div>";
+        chat.innerHTML += `
+          <div class="chat-message ai">
+            <div class="bubble">⚠️ Error fetching data.</div>
+          </div>`;
       }
 
       avatar.classList.remove("scanning");
@@ -213,4 +260,4 @@
     }
   </script>
 </body>
-    </html>
+</html>
