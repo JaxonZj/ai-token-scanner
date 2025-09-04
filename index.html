@@ -148,10 +148,13 @@
       background: #6a78ff;
     }
 
+    /* Transparent floating avatar */
     #avatar {
       font-size: 60px;
-      margin: 20px auto;
       display: inline-block;
+      background: transparent; /* fully transparent */
+      padding: 0;
+      margin: 20px auto;
       animation: pulseRotate 4s infinite ease-in-out;
     }
 
@@ -182,7 +185,11 @@
   </style>
 </head>
 <body>
-  <div id="avatar" style="text-align:center;">🤖</div>
+  <!-- Floating Avatar -->
+  <div style="text-align:center;">
+    <span id="avatar">🔎</span>
+  </div>
+
   <div id="chat"></div>
 
   <div id="inputArea">
@@ -204,17 +211,16 @@
       const token = document.getElementById('inputBox').value.trim();
       const chat = document.getElementById('chat');
       const avatar = document.getElementById('avatar');
-
       if (!token) return;
 
-      // User bubble (right)
+      // User bubble
       chat.innerHTML += `
         <div class="chat-message user">
           <div class="bubble">${token}</div>
         </div>`;
       chat.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'end' });
 
-      // AI bubble (left)
+      // AI scanning bubble
       chat.innerHTML += `
         <div class="chat-message ai">
           <div class="bubble">🔎 Scanning token...</div>
@@ -231,13 +237,12 @@
           const pair = data.pairs[0];
           const name = pair.baseToken.name;
           const symbol = pair.baseToken.symbol;
-          const price = pair.priceUsd;
+          const price = Number(pair.priceUsd).toFixed(6);
           const liquidity = pair.liquidity?.usd ?? "N/A";
           const mc = pair.fdv ?? "N/A";
           const chartUrl = pair.url;
           const logo = pair.info?.imageUrl || "https://cryptologos.cc/logos/placeholder.png";
 
-          // AI token card (separate)
           chat.innerHTML += `
             <div class="chat-message ai">
               <div class="token-card">
@@ -250,7 +255,6 @@
               </div>
             </div>`;
           chat.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-
         } else {
           chat.innerHTML += `
             <div class="chat-message ai">
