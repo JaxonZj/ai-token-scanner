@@ -177,44 +177,49 @@
         const utterance=new SpeechSynthesisUtterance(text);
         utterance.lang='en-US'; utterance.pitch=1.2; utterance.rate=1; utterance.volume=1;
         window.speechSynthesis.speak(utterance);
-      }
-    }
-
+        
     async function sendToken() {
-      const tokenBox = document.getElementById('inputBox');
-      const token = tokenBox.value.trim();
-      if (!token) return;
+  const tokenBox = document.getElementById('inputBox');
+  const token = tokenBox.value.trim();
+  if (!token) return;
 
-      // Clear input immediately
-      tokenBox.value = "";
-      tokenBox.focus();
+  // Clear input immediately
+  tokenBox.value = "";
+  tokenBox.focus();
 
-      // Add user bubble
-      chat.innerHTML += `<div class="chat-message user"><div class="bubble">${token}</div></div>`;
-      chat.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  // Add user bubble
+  chat.innerHTML += `<div class="chat-message user"><div class="bubble">${token}</div></div>`;
+  chat.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
 
-      // Add AI scanning bubble
-      chat.innerHTML += `<div class="chat-message ai"><div class="bubble" id="ai-bubble">🔎 Scanning token...</div></div>`;
-      chat.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  // Add AI scanning bubble
+  chat.innerHTML += `<div class="chat-message ai"><div class="bubble" id="ai-bubble">🔎 Scanning token...</div></div>`;
+  const aiBubble = chat.querySelector('.ai:last-child .bubble');
+  chat.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
 
-      scanAvatar(3000);
+  // Animate avatar
+  scanAvatar(3000);
 
-      try {
-        const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`);
-        const data = await res.json();
-        const aiBubble = chat.querySelector('.ai:last-child .bubble');
+  try {
+    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`);
+    const data = await res.json();
 
-        if (data.pairs && data.pairs.length > 0) {
-          const pair = data.pairs[0];
-          const name = pair.baseToken.name || "Unknown";
-          const symbol = pair.baseToken.symbol || "N/A";
-          const price = pair.priceUsd ?? "N/A";
-          const liquidity = pair.liquidity?.usd ?? "N/A";
-          const mc = pair.fdv ?? "N/A";
-          const chartUrl = pair.url ?? "#";
-          const logo = pair.info?.imageUrl || "https://cryptologos.cc/logos/placeholder.png";
+    if (data.pairs && data.pairs.length > 0) {
+      const pair = data.pairs[0];
+      const name = pair.baseToken.name || "Unknown";
+      const symbol = pair.baseToken.symbol || "N/A";
+      const price = pair.priceUsd ?? "N/A";
+      const liquidity = pair.liquidity?.usd ?? "N/A";
+      const mc = pair.fdv ?? "N/A";
+      const chartUrl = pair.url ?? "#";
+      const logo = pair.info?.imageUrl || "https://cryptologos.cc/logos/placeholder.png";
 
-          const cardHTML = `
+      // Update AI bubble text first
+      typeWriter(aiBubble, "✅ Scan complete!", 40, () => {
+        speak(`${name} token scanned. Price is ${price} dollars. Market Cap is ${formatNumber(mc)} dollars.`);
+
+        // Then append the token card **as a separate chat message**
+        const cardHTML = `
+          <div class="chat-message ai">
             <div class="token-card">
               <img src="${logo}" alt="${name}">
               <h2>${name} (${symbol})</h2>
@@ -223,20 +228,19 @@
               <div class="stat liq">Liquidity: ${formatNumber(liquidity)}</div>
               <a class="chart-btn" href="${chartUrl}" target="_blank">View Chart</a>
             </div>
-          `;
+          </div>
+        `;
+        chat.innerHTML += cardHTML;
+        chat.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      });
 
-          typeWriter(aiBubble, "✅ Scan complete!", 40, () => {
-            aiBubble.innerHTML += cardHTML;
-            speak(`${name} token scanned. Price is ${price} dollars. Market Cap is ${formatNumber(mc)} dollars.`);
-            chat.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
-          });
+    } else {
+      typeWriter(aiBubble, "❌ Couldn’t find this token.", 40, () => { speak("Could not find this token."); });
+    }
 
-        } else {
-          typeWriter(aiBubble, "❌ Couldn’t find this token.", 40, () => { speak("Could not find this token."); });
-        }
-      } catch (err) {
-        typeWriter(chat.querySelector('.ai:last-child .bubble'), "⚠️ Error fetching data.", 40, () => { speak("Error fetching data."); });
-      }
+  } catch (err) {
+    typeWriter(aiBubble, "⚠️ Error fetching data.", 40, () => { speak("Error fetching data."); });
+  }
     }
   </script>
 </body>
