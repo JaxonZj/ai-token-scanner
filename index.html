@@ -1,247 +1,260 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>AI Token Scanner</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #0f0f1a;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Token Scanner</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #0f0f1a;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
 
-    #chat {    
-      flex: 1;      
-      overflow-y: auto;      
-      padding: 15px;
-      padding-top: 120px; /* leave space for avatar */
-      max-width: 95%;      
-      margin: auto;      
-      word-wrap: break-word;      
-      scroll-behavior: smooth;        
-    }
+  #chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    max-width: 600px;
+    margin: auto;
+    scroll-behavior: smooth;
+  }
 
-    /* Chat bubbles */
-    .chat-message { display: flex; margin: 8px 0; max-width: 80%; }
-    .user { justify-content: flex-end; margin-left: auto; }
-    .user .bubble {
-      background: #4e5dff;
-      color: #fff;
-      border-radius: 16px 16px 4px 16px;
-      padding: 10px 14px;
-      box-shadow: 0 0 10px rgba(78,93,255,0.5);
-      word-break: break-all;
-      white-space: pre-wrap;
-    }
-    .ai { justify-content: flex-start; margin-right: auto; }
-    .ai .bubble {
-      background: linear-gradient(135deg, #1c1c2b, #2a2a40);
-      color: #00ffd5;
-      border-radius: 16px 16px 16px 4px;
-      padding: 10px 14px;
-      box-shadow: 0 0 10px rgba(0,255,213,0.4);
-      word-break: break-all;
-      white-space: pre-wrap;
-    }
+  .chat-message {
+    display: flex;
+    margin: 8px 0;
+  }
 
-    /* Token card */
-    .token-card {
-      background: linear-gradient(135deg, #1c1c2b, #2a2a40);
-      border: 2px solid #4e5dff;
-      border-radius: 20px;
-      padding: 20px;
-      margin: 10px 0;
-      max-width: 420px;
-      text-align: center;
-      box-shadow: 0 0 20px rgba(78, 93, 255, 0.4);
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
-    }
-    .token-card:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(78, 93, 255, 0.7); }
-    .token-card h2 { margin: 10px 0; font-size: 22px; color: #00ffd5; text-shadow: 0 0 8px rgba(0,255,213,0.8); }
-    .token-card img { width: 60px; height: 60px; border-radius: 50%; margin-bottom: 10px; border: 2px solid #4e5dff; box-shadow: 0 0 12px rgba(78,93,255,0.6); }
-    .stat { font-size: 18px; margin: 6px 0; }
-    .price { color: #4eff9c; }
-    .mc { color: #ff5dff; }
-    .liq { color: #5dc1ff; }
-    .chart-btn {
-      display: inline-block; margin-top: 12px; padding: 10px 18px;
-      background: #4e5dff; color: #fff; border-radius: 12px; text-decoration: none;
-      font-weight: bold; transition: background 0.2s, box-shadow 0.2s;
-    }
-    .chart-btn:hover { background: #6a78ff; box-shadow: 0 0 15px rgba(106,120,255,0.7); }
+  .chat-message.user {
+    justify-content: flex-end;
+  }
 
-    #inputArea { display: flex; padding: 10px; background: #1c1c2b; border-top: 2px solid #4e5dff; }
-    #inputBox { flex: 1; padding: 10px; border-radius: 8px; border: none; outline: none; margin-right: 10px; }
-    button { padding: 10px 16px; border-radius: 8px; border: none; outline: none; background: #4e5dff; color: white; cursor: pointer; transition: 0.2s; }
-    button:hover { background: #6a78ff; }
+  .chat-message.ai {
+    justify-content: flex-start;
+  }
 
-    /* Avatar */
-    #avatar {
-      position: fixed; top: 20px; left: 50%;
-      transform: translateX(-50%); font-size: 60px; z-index: 999; background: transparent; cursor: grab;
-    }
-    #avatar span { display: inline-block; }
+  .bubble {
+    padding: 10px 15px;
+    border-radius: 15px;
+    max-width: 80%;
+    word-wrap: break-word;
+    background: #1a1a2e;
+    position: relative;
+  }
 
-    /* Idle */
-    #avatar.idle span { animation: pulseRotate 4s infinite ease-in-out; }
-    #avatar.idle { animation: floatY 3s infinite ease-in-out; }
+  .chat-message.user .bubble {
+    background: #00fff7;
+    color: #000;
+    border-bottom-right-radius: 0;
+  }
 
-    /* Scanning */
-    #avatar.scanning span { animation: glow 1s infinite alternate; }
-    #avatar.scanning { animation: scanShake 0.4s infinite; }
+  .chat-message.ai .bubble {
+    background: #1a1a2e;
+    border-bottom-left-radius: 0;
+  }
 
-    /* Keyframes */
-    @keyframes pulseRotate { 0%,100%{transform:rotate(0deg) scale(1);} 25%{transform:rotate(5deg) scale(1.05);} 50%{transform:rotate(0deg) scale(1);} 75%{transform:rotate(-5deg) scale(1.05);} }
-    @keyframes floatY { 0%,100%{transform:translateX(-50%) translateY(0);} 50%{transform:translateX(-50%) translateY(-8px);} }
-    @keyframes scanShake { 0%,100%{transform:translateX(-50%) translateY(0);} 25%{transform:translateX(calc(-50% - 5px));} 50%{transform:translateX(calc(-50% + 5px));} 75%{transform:translateX(calc(-50% - 5px));} }
-    @keyframes glow { from {text-shadow:0 0 10px #00ffd5,0 0 20px #4e5dff;} to {text-shadow:0 0 20px #00ffd5,0 0 30px #4e5dff;} }
-  </style>
+  /* Token card inside AI bubble */
+  .token-card {
+    background: #111;
+    padding: 10px;
+    border-radius: 12px;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
+    transition: transform 0.3s;
+  }
+
+  .token-card img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    vertical-align: middle;
+    margin-right: 10px;
+  }
+
+  .token-card h2 {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 18px;
+    margin: 0;
+  }
+
+  .token-card .stat {
+    font-size: 14px;
+    margin: 5px 0;
+  }
+
+  .chart-btn {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 5px 10px;
+    background: #00fff7;
+    color: #000;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 12px;
+  }
+
+  /* Token card pulse */
+  .token-card.pulse {
+    animation: pulseGlow 1s ease-in-out 2;
+    box-shadow: 0 0 20px #00fff7, 0 0 40px #00fff7;
+  }
+
+  @keyframes pulseGlow {
+    0% { transform: scale(1); box-shadow: 0 0 10px #00fff7, 0 0 20px #00fff7; }
+    50% { transform: scale(1.03); box-shadow: 0 0 25px #00fff7, 0 0 50px #00fff7; }
+    100% { transform: scale(1); box-shadow: 0 0 10px #00fff7, 0 0 20px #00fff7; }
+  }
+
+  /* AI Avatar */
+  #avatar {
+    font-size: 60px;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  #avatar.pulse {
+    animation: avatarPulse 1s ease-in-out 2;
+    box-shadow: 0 0 15px #00fff7, 0 0 30px #00fff7;
+    border-radius: 50%;
+  }
+
+  @keyframes avatarPulse {
+    0% { transform: scale(1); box-shadow: 0 0 5px #00fff7, 0 0 10px #00fff7; }
+    50% { transform: scale(1.05); box-shadow: 0 0 20px #00fff7, 0 0 40px #00fff7; }
+    100% { transform: scale(1); box-shadow: 0 0 5px #00fff7, 0 0 10px #00fff7; }
+  }
+
+  /* Input box */
+  #input-container {
+    display: flex;
+    padding: 10px;
+    background: #111;
+  }
+
+  #user-input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 12px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+  }
+
+  #send-btn {
+    margin-left: 10px;
+    padding: 10px 15px;
+    border-radius: 12px;
+    border: none;
+    background: #00fff7;
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+</style>
 </head>
 <body>
-  <div id="avatar" class="idle"><span>🤖</span></div>
-  <div id="chat"></div>
 
-  <div id="inputArea">
-    <input id="inputBox" placeholder="Enter token address">
-    <button onclick="sendToken()">Scan</button>
-  </div>
+<div id="avatar">🤖</div>
 
-  <script>
-    const avatar = document.getElementById('avatar');
-    const chat = document.getElementById('chat');
+<div id="chat"></div>
 
-    // Draggable avatar
-    let isDragging = false, offsetX, offsetY;
-    avatar.addEventListener('mousedown', e => {
-      isDragging = true;
-      offsetX = e.clientX - avatar.getBoundingClientRect().left;
-      offsetY = e.clientY - avatar.getBoundingClientRect().top;
-      avatar.style.transition = 'none';
-      avatar.style.cursor = 'grabbing';
-    });
-    document.addEventListener('mousemove', e => {
-      if(isDragging) {
-        avatar.style.left = `${e.clientX - offsetX}px`;
-        avatar.style.top = `${e.clientY - offsetY}px`;
-      }
-    });
-    document.addEventListener('mouseup', () => { if(isDragging){ isDragging=false; avatar.style.transition=''; avatar.style.cursor='grab'; } });
+<div id="input-container">
+  <input id="user-input" placeholder="Type token symbol or name..." />
+  <button id="send-btn">Send</button>
+</div>
 
-    // Mobile touch support
-    avatar.addEventListener('touchstart', e => {
-      isDragging = true;
-      offsetX = e.touches[0].clientX - avatar.getBoundingClientRect().left;
-      offsetY = e.touches[0].clientY - avatar.getBoundingClientRect().top;
-      avatar.style.transition = 'none';
-    });
-    document.addEventListener('touchmove', e => {
-      if(isDragging) {
-        avatar.style.left = `${e.touches[0].clientX - offsetX}px`;
-        avatar.style.top = `${e.touches[0].clientY - offsetY}px`;
-      }
-    });
-    document.addEventListener('touchend', () => { isDragging=false; avatar.style.transition=''; });
+<script>
+const chat = document.getElementById('chat');
+const avatar = document.getElementById('avatar');
+const sendBtn = document.getElementById('send-btn');
+const userInput = document.getElementById('user-input');
 
-    function scanAvatar(duration=2000){
-      avatar.classList.remove('idle');
-      avatar.classList.add('scanning');
-      setTimeout(()=>{avatar.classList.remove('scanning'); avatar.classList.add('idle');},duration);
-    }
+// Format large numbers
+function formatNumber(num) {
+  return num.toLocaleString();
+}
 
-    function formatNumber(num){
-      if(num==="N/A") return num;
-      num = Number(num);
-      if(num>=1e9) return (num/1e9).toFixed(2)+"B";
-      if(num>=1e6) return (num/1e6).toFixed(2)+"M";
-      if(num>=1e3) return (num/1e3).toFixed(2)+"k";
-      return num.toString();
-    }
+// Mock token scan function (replace with your DexScreener API)
+function scanToken(name) {
+  return {
+    name: name,
+    symbol: name.slice(0,3).toUpperCase(),
+    logo: 'https://via.placeholder.com/50',
+    price: (Math.random()*10).toFixed(2),
+    mc: Math.floor(Math.random()*1000000),
+    liquidity: Math.floor(Math.random()*500000),
+    chartUrl: 'https://dexscreener.com/'
+  };
+}
 
-    function typeWriter(element, text, speed=40, callback){
-      element.innerHTML="";
-      let i=0;
-      function typing(){
-        if(i<text.length){ element.innerHTML+=text.charAt(i); i++; setTimeout(typing,speed);}
-        else if(callback) callback();
-      }
-      typing();
-    }
+// Append user message
+function addUserMessage(text) {
+  chat.innerHTML += `
+    <div class="chat-message user">
+      <div class="bubble">${text}</div>
+    </div>
+  `;
+  chat.lastElementChild.scrollIntoView({ behavior: 'smooth' });
+}
 
-    function speak(text){
-      if('speechSynthesis' in window){
-        const utterance=new SpeechSynthesisUtterance(text);
-        utterance.lang='en-US'; utterance.pitch=1.2; utterance.rate=1; utterance.volume=1;
-        window.speechSynthesis.speak(utterance);
-        
-    async function sendToken() {
-  const tokenBox = document.getElementById('inputBox');
-  const token = tokenBox.value.trim();
-  if (!token) return;
+// Append AI message with token card
+function addTokenCard(token) {
+  const cardHTML = `
+    <div class="chat-message ai">
+      <div class="bubble">
+        <div class="token-card pulse">
+          <img src="${token.logo}" alt="${token.name}">
+          <h2>${token.name} (${token.symbol})</h2>
+          <div class="stat price">Price: $${token.price}</div>
+          <div class="stat mc">Market Cap: ${formatNumber(token.mc)}</div>
+          <div class="stat liq">Liquidity: ${formatNumber(token.liquidity)}</div>
+          <a class="chart-btn" href="${token.chartUrl}" target="_blank">View Chart</a>
+        </div>
+      </div>
+    </div>
+  `;
+  chat.innerHTML += cardHTML;
+  chat.lastElementChild.scrollIntoView({ behavior: 'smooth' });
 
-  // Clear input immediately
-  tokenBox.value = "";
-  tokenBox.focus();
+  // Trigger avatar pulse
+  avatar.classList.add('pulse');
+  avatar.addEventListener('animationend', () => avatar.classList.remove('pulse'), { once: true });
 
-  // Add user bubble
-  chat.innerHTML += `<div class="chat-message user"><div class="bubble">${token}</div></div>`;
-  chat.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  // Remove token card pulse after animation
+  const tokenCard = chat.querySelector('.token-card.pulse:last-child');
+  tokenCard.addEventListener('animationend', () => tokenCard.classList.remove('pulse'));
+}
 
-  // Add AI scanning bubble
-  chat.innerHTML += `<div class="chat-message ai"><div class="bubble" id="ai-bubble">🔎 Scanning token...</div></div>`;
-  const aiBubble = chat.querySelector('.ai:last-child .bubble');
-  chat.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
+// Handle sending message
+sendBtn.addEventListener('click', () => {
+  const text = userInput.value.trim();
+  if (!text) return;
+  addUserMessage(text);
+  userInput.value = '';
 
-  // Animate avatar
-  scanAvatar(3000);
+  // Mock scanning token after delay
+  setTimeout(() => {
+    const token = scanToken(text);
+    addTokenCard(token);
+  }, 800);
+});
 
-  try {
-    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`);
-    const data = await res.json();
+// Send on Enter key
+userInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') sendBtn.click();
+});
+</script>
 
-    if (data.pairs && data.pairs.length > 0) {
-      const pair = data.pairs[0];
-      const name = pair.baseToken.name || "Unknown";
-      const symbol = pair.baseToken.symbol || "N/A";
-      const price = pair.priceUsd ?? "N/A";
-      const liquidity = pair.liquidity?.usd ?? "N/A";
-      const mc = pair.fdv ?? "N/A";
-      const chartUrl = pair.url ?? "#";
-      const logo = pair.info?.imageUrl || "https://cryptologos.cc/logos/placeholder.png";
-
-      // Update AI bubble text first
-      typeWriter(aiBubble, "✅ Scan complete!", 40, () => {
-        speak(`${name} token scanned. Price is ${price} dollars. Market Cap is ${formatNumber(mc)} dollars.`);
-
-        // Then append the token card **as a separate chat message**
-        const cardHTML = `
-          <div class="chat-message ai">
-            <div class="token-card">
-              <img src="${logo}" alt="${name}">
-              <h2>${name} (${symbol})</h2>
-              <div class="stat price">Price: $${price}</div>
-              <div class="stat mc">Market Cap: ${formatNumber(mc)}</div>
-              <div class="stat liq">Liquidity: ${formatNumber(liquidity)}</div>
-              <a class="chart-btn" href="${chartUrl}" target="_blank">View Chart</a>
-            </div>
-          </div>
-        `;
-        chat.innerHTML += cardHTML;
-        chat.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      });
-
-    } else {
-      typeWriter(aiBubble, "❌ Couldn’t find this token.", 40, () => { speak("Could not find this token."); });
-    }
-
-  } catch (err) {
-    typeWriter(aiBubble, "⚠️ Error fetching data.", 40, () => { speak("Error fetching data."); });
-  }
-    }
-  </script>
 </body>
   </html>
