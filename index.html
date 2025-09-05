@@ -63,7 +63,7 @@
 
     .token-card {
       background: linear-gradient(135deg, #1c1c2b, #2a2a40);
-      border: 2px solid #4e5dff;
+      border: 2px solid rgba(78, 93, 255, 0); /* Transparent border */
       border-radius: 20px;
       padding: 20px;
       margin: 10px 0;
@@ -90,7 +90,7 @@
       height: 60px;
       border-radius: 50%;
       margin-bottom: 10px;
-      border: 2px solid #4e5dff;
+      border: 2px solid rgba(78, 93, 255, 0); /* Transparent border */
       box-shadow: 0 0 12px rgba(78, 93, 255, 0.6);
     }
 
@@ -153,6 +153,10 @@
       margin: 20px auto;
       display: inline-block;
       animation: floatPulse 4s infinite ease-in-out;
+      border-radius: 50%;
+      padding: 10px;
+      border: 2px solid rgba(78, 93, 255, 0); /* Transparent border */
+      box-shadow: 0 0 15px rgba(78, 93, 255, 0.6);
     }
 
     /* Idle floating & pulse */
@@ -261,21 +265,18 @@
             </div>`;
           chat.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'end' });
         }
-
       } catch (err) {
+        console.error(err);
         chat.innerHTML += `
           <div class="chat-message ai">
-            <div class="bubble">⚠️ Error fetching data.</div>
+            <div class="bubble">❌ Error fetching token data. Please try again later.</div>
           </div>`;
         chat.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      } finally {
+        // Stop scanning animation
+        avatar.classList.remove("scanning");
       }
-
-      // Stop scanning animation, go back to idle
-      avatar.classList.remove("scanning");
-
-      // Clear input
-      document.getElementById('inputBox').value = "";
     }
   </script>
 </body>
-  </html>
+</html>
