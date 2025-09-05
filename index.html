@@ -150,13 +150,13 @@
 
     /* Avatar */
     #avatar {
-      font-size: 60px;
       position: fixed;
       top: 20px;
       left: 50%;
-      transform: translateX(-50%);
-      z-index: 999;
-      background: transparent;
+      transform: translateX(-50%); /* centers horizontally */
+      width: 60px; /* avatar width */
+      height: 60px; /* avatar height */
+      z-index: 1000;
     }
 
     /* Idle floating & pulse animation */
@@ -198,7 +198,7 @@
 </head>
 <body>
   
-  <div id="avatar" style="text-align:center;">🤖</div>      
+  <div id="avatar" class="idle">🤖</div>      
   <div id="chat"></div> 
     
   <div id="inputArea">    
