@@ -180,46 +180,63 @@
       }
     }
 
-    async function sendToken(){
-      const token=document.getElementById('inputBox').value.trim();
-      if(!token) return;
+    async function sendToken() {
+      const tokenBox = document.getElementById('inputBox');
+      const token = tokenBox.value.trim();
+      if (!token) return;
 
-      // User bubble
-      chat.innerHTML+=`<div class="chat-message user"><div class="bubble">${token}</div></div>`;
-      chat.lastElementChild.scrollIntoView({behavior:'smooth',block:'end'});
+      // Clear input immediately
+      tokenBox.value = "";
+      tokenBox.focus();
 
-      // AI scanning bubble
-      chat.innerHTML+=`<div class="chat-message ai"><div class="bubble" id="ai-bubble">🔎 Scanning token...</div></div>`;
-      chat.lastElementChild.scrollIntoView({behavior:'smooth',block:'end'});
+      // Add user bubble
+      chat.innerHTML += `<div class="chat-message user"><div class="bubble">${token}</div></div>`;
+      chat.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
 
-      scanAvatar(2000);
+      // Add AI scanning bubble
+      chat.innerHTML += `<div class="chat-message ai"><div class="bubble" id="ai-bubble">🔎 Scanning token...</div></div>`;
+      chat.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
 
-      try{
-        const res=await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`);
-        const data=await res.json();
+      scanAvatar(3000);
 
-        const aiBubble=chat.querySelector('.ai:last-child .bubble');
+      try {
+        const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`);
+        const data = await res.json();
+        const aiBubble = chat.querySelector('.ai:last-child .bubble');
 
-        if(data.pairs && data.pairs.length>0){
-          const pair=data.pairs[0];
-          const name=pair.baseToken.name;
-          const symbol=pair.baseToken.symbol;
-          const price=pair.priceUsd;
-          const liquidity=pair.liquidity?.usd??"N/A";
-          const mc=pair.fdv??"N/A";
-          const chartUrl=pair.url;
-          const logo=pair.info?.imageUrl||"https://cryptologos.cc/logos/placeholder.png";
+        if (data.pairs && data.pairs.length > 0) {
+          const pair = data.pairs[0];
+          const name = pair.baseToken.name || "Unknown";
+          const symbol = pair.baseToken.symbol || "N/A";
+          const price = pair.priceUsd ?? "N/A";
+          const liquidity = pair.liquidity?.usd ?? "N/A";
+          const mc = pair.fdv ?? "N/A";
+          const chartUrl = pair.url ?? "#";
+          const logo = pair.info?.imageUrl || "https://cryptologos.cc/logos/placeholder.png";
 
-          typeWriter(aiBubble,`✅ Scan complete! ${name} (${symbol})\nPrice: $${price}\nMarket Cap: $${formatNumber(mc)}`,40,()=>speak(`${name} token scanned. Price is ${price} dollars. Market Cap is ${formatNumber(mc)} dollars.`));
+          const cardHTML = `
+            <div class="token-card">
+              <img src="${logo}" alt="${name}">
+              <h2>${name} (${symbol})</h2>
+              <div class="stat price">Price: $${price}</div>
+              <div class="stat mc">Market Cap: ${formatNumber(mc)}</div>
+              <div class="stat liq">Liquidity: ${formatNumber(liquidity)}</div>
+              <a class="chart-btn" href="${chartUrl}" target="_blank">View Chart</a>
+            </div>
+          `;
 
-        }else{
-          typeWriter(aiBubble,"❌ Couldn’t find this token.",40,()=>speak("Could not find this token."));
+          typeWriter(aiBubble, "✅ Scan complete!", 40, () => {
+            aiBubble.innerHTML += cardHTML;
+            speak(`${name} token scanned. Price is ${price} dollars. Market Cap is ${formatNumber(mc)} dollars.`);
+            chat.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
+          });
+
+        } else {
+          typeWriter(aiBubble, "❌ Couldn’t find this token.", 40, () => { speak("Could not find this token."); });
         }
-      }catch(err){
-        typeWriter(chat.querySelector('.ai:last-child .bubble'),"⚠️ Error fetching data.",40,()=>speak("Error fetching data."));
+      } catch (err) {
+        typeWriter(chat.querySelector('.ai:last-child .bubble'), "⚠️ Error fetching data.", 40, () => { speak("Error fetching data."); });
       }
-
-      document.getElementById('inputBox').value="";
     }
   </script>
 </body>
