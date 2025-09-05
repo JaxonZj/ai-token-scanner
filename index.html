@@ -13,257 +13,214 @@
       display: flex;
       flex-direction: column;
       height: 100vh;
-      overflow: hidden;
     }
 
-    #chat {
-      flex: 1;
-      overflow-y: auto;
+    #chat {    
+      flex: 1;      
+      overflow-y: auto;      
       padding: 15px;
-      max-width: 600px;
-      margin: auto;
-      word-wrap: break-word;
-      scroll-behavior: smooth;
+      padding-top: 120px; /* leave space for avatar */
+      max-width: 95%;      
+      margin: auto;      
+      word-wrap: break-word;      
+      scroll-behavior: smooth;        
     }
 
-    .chat-message {
-      display: flex;
-      margin: 5px 0;
+    /* Chat bubbles */
+    .chat-message { display: flex; margin: 8px 0; max-width: 80%; }
+    .user { justify-content: flex-end; margin-left: auto; }
+    .user .bubble {
+      background: #4e5dff;
+      color: #fff;
+      border-radius: 16px 16px 4px 16px;
+      padding: 10px 14px;
+      box-shadow: 0 0 10px rgba(78,93,255,0.5);
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
+    .ai { justify-content: flex-start; margin-right: auto; }
+    .ai .bubble {
+      background: linear-gradient(135deg, #1c1c2b, #2a2a40);
+      color: #00ffd5;
+      border-radius: 16px 16px 16px 4px;
+      padding: 10px 14px;
+      box-shadow: 0 0 10px rgba(0,255,213,0.4);
+      word-break: break-all;
+      white-space: pre-wrap;
     }
 
-    .chat-message.user {
-      justify-content: flex-end;
-    }
-
-    .chat-message.ai {
-      justify-content: flex-start;
-    }
-
-    .bubble {
-      background: #1a1a2e;
-      padding: 10px 15px;
-      border-radius: 15px;
-      max-width: 80%;
-      animation: fadeIn 0.3s ease;
-    }
-
-    .chat-message.user .bubble {
-      background: #3a3aff;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    #inputBox {
-      width: calc(100% - 120px);
-      padding: 10px;
-      margin: 10px;
-      border-radius: 10px;
-      border: none;
-      outline: none;
-      font-size: 16px;
-    }
-
-    #scanBtn {
-      padding: 10px 20px;
-      margin: 10px 10px 10px 0;
-      border-radius: 10px;
-      border: none;
-      background: #3a3aff;
-      color: white;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    #avatar {
-      font-size: 60px;
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      transition: transform 0.3s;
-      cursor: grab;
-      user-select: none;
-    }
-
-    #avatar.idle {
-      animation: float 2s ease-in-out infinite;
-    }
-
-    #avatar.scanning {
-      animation: float 1s ease-in-out infinite, glow 0.5s alternate infinite;
-    }
-
-    @keyframes float {
-      0%,100% { transform: translateX(-50%) translateY(0); }
-      50% { transform: translateX(-50%) translateY(-10px); }
-    }
-
-    @keyframes glow {
-      0% { text-shadow: 0 0 5px #3a3aff; }
-      100% { text-shadow: 0 0 20px #3a3aff; }
-    }
-
+    /* Token card */
     .token-card {
-      background: #1a1a2e;
-      border-radius: 15px;
-      padding: 15px;
+      background: linear-gradient(135deg, #1c1c2b, #2a2a40);
+      border: 2px solid #4e5dff;
+      border-radius: 20px;
+      padding: 20px;
+      margin: 10px 0;
+      max-width: 420px;
       text-align: center;
-      margin-top: 5px;
+      box-shadow: 0 0 20px rgba(78, 93, 255, 0.4);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
-
-    .token-card img {
-      width: 60px;
-      height: 60px;
-      border-radius: 30px;
-      margin-bottom: 10px;
-    }
-
-    .token-card h2 {
-      margin: 5px 0;
-    }
-
-    .token-card p.stat {
-      margin: 3px 0;
-    }
-
+    .token-card:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(78, 93, 255, 0.7); }
+    .token-card h2 { margin: 10px 0; font-size: 22px; color: #00ffd5; text-shadow: 0 0 8px rgba(0,255,213,0.8); }
+    .token-card img { width: 60px; height: 60px; border-radius: 50%; margin-bottom: 10px; border: 2px solid #4e5dff; box-shadow: 0 0 12px rgba(78,93,255,0.6); }
+    .stat { font-size: 18px; margin: 6px 0; }
+    .price { color: #4eff9c; }
+    .mc { color: #ff5dff; }
+    .liq { color: #5dc1ff; }
     .chart-btn {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 6px 12px;
-      border-radius: 8px;
-      background: #3a3aff;
-      color: white;
-      text-decoration: none;
+      display: inline-block; margin-top: 12px; padding: 10px 18px;
+      background: #4e5dff; color: #fff; border-radius: 12px; text-decoration: none;
+      font-weight: bold; transition: background 0.2s, box-shadow 0.2s;
     }
+    .chart-btn:hover { background: #6a78ff; box-shadow: 0 0 15px rgba(106,120,255,0.7); }
+
+    #inputArea { display: flex; padding: 10px; background: #1c1c2b; border-top: 2px solid #4e5dff; }
+    #inputBox { flex: 1; padding: 10px; border-radius: 8px; border: none; outline: none; margin-right: 10px; }
+    button { padding: 10px 16px; border-radius: 8px; border: none; outline: none; background: #4e5dff; color: white; cursor: pointer; transition: 0.2s; }
+    button:hover { background: #6a78ff; }
+
+    /* Avatar */
+    #avatar {
+      position: fixed; top: 20px; left: 50%;
+      transform: translateX(-50%); font-size: 60px; z-index: 999; background: transparent; cursor: grab;
+    }
+    #avatar span { display: inline-block; }
+
+    /* Idle */
+    #avatar.idle span { animation: pulseRotate 4s infinite ease-in-out; }
+    #avatar.idle { animation: floatY 3s infinite ease-in-out; }
+
+    /* Scanning */
+    #avatar.scanning span { animation: glow 1s infinite alternate; }
+    #avatar.scanning { animation: scanShake 0.4s infinite; }
+
+    /* Keyframes */
+    @keyframes pulseRotate { 0%,100%{transform:rotate(0deg) scale(1);} 25%{transform:rotate(5deg) scale(1.05);} 50%{transform:rotate(0deg) scale(1);} 75%{transform:rotate(-5deg) scale(1.05);} }
+    @keyframes floatY { 0%,100%{transform:translateX(-50%) translateY(0);} 50%{transform:translateX(-50%) translateY(-8px);} }
+    @keyframes scanShake { 0%,100%{transform:translateX(-50%) translateY(0);} 25%{transform:translateX(calc(-50% - 5px));} 50%{transform:translateX(calc(-50% + 5px));} 75%{transform:translateX(calc(-50% - 5px));} }
+    @keyframes glow { from {text-shadow:0 0 10px #00ffd5,0 0 20px #4e5dff;} to {text-shadow:0 0 20px #00ffd5,0 0 30px #4e5dff;} }
   </style>
 </head>
 <body>
-  <div id="avatar" class="idle">🤖</div>
+  <div id="avatar" class="idle"><span>🤖</span></div>
   <div id="chat"></div>
-  <div style="display:flex; justify-content:center; align-items:center;">
-    <input type="text" id="inputBox" placeholder="Enter token contract...">
-    <button id="scanBtn">Scan</button>
+
+  <div id="inputArea">
+    <input id="inputBox" placeholder="Enter token address">
+    <button onclick="sendToken()">Scan</button>
   </div>
 
   <script>
     const avatar = document.getElementById('avatar');
     const chat = document.getElementById('chat');
 
-    // --- Draggable Avatar ---
+    // Draggable avatar
     let isDragging = false, offsetX, offsetY;
     avatar.addEventListener('mousedown', e => {
       isDragging = true;
-      offsetX = e.clientX - avatar.offsetLeft;
-      offsetY = e.clientY - avatar.offsetTop;
+      offsetX = e.clientX - avatar.getBoundingClientRect().left;
+      offsetY = e.clientY - avatar.getBoundingClientRect().top;
+      avatar.style.transition = 'none';
       avatar.style.cursor = 'grabbing';
     });
-
     document.addEventListener('mousemove', e => {
-      if (isDragging) {
-        avatar.style.left = (e.clientX - offsetX) + 'px';
-        avatar.style.top = (e.clientY - offsetY) + 'px';
+      if(isDragging) {
+        avatar.style.left = `${e.clientX - offsetX}px`;
+        avatar.style.top = `${e.clientY - offsetY}px`;
       }
     });
+    document.addEventListener('mouseup', () => { if(isDragging){ isDragging=false; avatar.style.transition=''; avatar.style.cursor='grab'; } });
 
-    document.addEventListener('mouseup', e => {
-      isDragging = false;
-      avatar.style.cursor = 'grab';
+    // Mobile touch support
+    avatar.addEventListener('touchstart', e => {
+      isDragging = true;
+      offsetX = e.touches[0].clientX - avatar.getBoundingClientRect().left;
+      offsetY = e.touches[0].clientY - avatar.getBoundingClientRect().top;
+      avatar.style.transition = 'none';
     });
-
-    // --- Typewriter Effect ---
-    async function typeWriter(el, text, speed=25) {
-      el.innerText = '';
-      for (let i=0; i<text.length; i++) {
-        el.innerText += text[i];
-        await new Promise(r => setTimeout(r, speed));
+    document.addEventListener('touchmove', e => {
+      if(isDragging) {
+        avatar.style.left = `${e.touches[0].clientX - offsetX}px`;
+        avatar.style.top = `${e.touches[0].clientY - offsetY}px`;
       }
-    }
+    });
+    document.addEventListener('touchend', () => { isDragging=false; avatar.style.transition=''; });
 
-    // --- Avatar scan animation ---
-    function scanAvatar(duration = 2000) {
+    function scanAvatar(duration=2000){
       avatar.classList.remove('idle');
       avatar.classList.add('scanning');
-      setTimeout(() => {
-        avatar.classList.remove('scanning');
-        avatar.classList.add('idle');
-      }, duration);
+      setTimeout(()=>{avatar.classList.remove('scanning'); avatar.classList.add('idle');},duration);
     }
 
-    function formatNumber(num) {
-      if (num === "N/A") return num;
+    function formatNumber(num){
+      if(num==="N/A") return num;
       num = Number(num);
-      if (num >= 1e9) return (num / 1e9).toFixed(2) + "B";
-      if (num >= 1e6) return (num / 1e6).toFixed(2) + "M";
-      if (num >= 1e3) return (num / 1e3).toFixed(2) + "k";
+      if(num>=1e9) return (num/1e9).toFixed(2)+"B";
+      if(num>=1e6) return (num/1e6).toFixed(2)+"M";
+      if(num>=1e3) return (num/1e3).toFixed(2)+"k";
       return num.toString();
     }
 
-    // --- Send token scan ---
-    async function sendToken() {
-      const token = document.getElementById('inputBox').value.trim();
-      if (!token) return;
-
-      // User bubble
-      chat.innerHTML += `<div class="chat-message user"><div class="bubble">${token}</div></div>`;
-      chat.lastElementChild.scrollIntoView({ behavior: 'smooth' });
-
-      // AI scanning bubble
-      const aiBubble = document.createElement('div');
-      aiBubble.className = 'chat-message ai';
-      const bubbleContent = document.createElement('div');
-      bubbleContent.className = 'bubble';
-      aiBubble.appendChild(bubbleContent);
-      chat.appendChild(aiBubble);
-      chat.lastElementChild.scrollIntoView({ behavior: 'smooth' });
-
-      // Typewriter scanning message
-      scanAvatar(2000);
-      await typeWriter(bubbleContent, '🔎 Scanning token...');
-
-      try {
-        const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`);
-        const data = await res.json();
-
-        if (data.pairs && data.pairs.length > 0) {
-          const pair = data.pairs[0];
-          const name = pair.baseToken.name;
-          const symbol = pair.baseToken.symbol;
-          const price = pair.priceUsd;
-          const liquidity = pair.liquidity?.usd ?? "N/A";
-          const mc = pair.fdv ?? "N/A";
-          const chartUrl = pair.url;
-          const logo = pair.info?.imageUrl || "https://cryptologos.cc/logos/placeholder.png";
-
-          const lore = `${name} is an emerging token. Always DYOR!`;
-
-          bubbleContent.innerHTML = `
-            <div class="token-card">
-              <img src="${logo}" alt="${symbol} logo">
-              <h2>${name} (${symbol})</h2>
-              <p class="stat price">💵 <b>Price:</b> $${price}</p>
-              <p class="stat mc">📊 <b>Market Cap:</b> $${formatNumber(mc)}</p>
-              <p class="stat liq">💧 <b>Liquidity:</b> $${formatNumber(liquidity)}</p>
-              <p>${lore}</p>
-              <a class="chart-btn" href="${chartUrl}" target="_blank">📈 View Chart</a>
-            </div>`;
-          chat.lastElementChild.scrollIntoView({ behavior: 'smooth' });
-        } else {
-          await typeWriter(bubbleContent, "❌ Couldn’t find this token.");
-        }
-      } catch (err) {
-        await typeWriter(bubbleContent, "⚠️ Error fetching data.");
+    function typeWriter(element, text, speed=40, callback){
+      element.innerHTML="";
+      let i=0;
+      function typing(){
+        if(i<text.length){ element.innerHTML+=text.charAt(i); i++; setTimeout(typing,speed);}
+        else if(callback) callback();
       }
-
-      document.getElementById('inputBox').value = "";
+      typing();
     }
 
-    document.getElementById('scanBtn').addEventListener('click', sendToken);
-    document.getElementById('inputBox').addEventListener('keypress', e => {
-      if (e.key === 'Enter') sendToken();
-    });
+    function speak(text){
+      if('speechSynthesis' in window){
+        const utterance=new SpeechSynthesisUtterance(text);
+        utterance.lang='en-US'; utterance.pitch=1.2; utterance.rate=1; utterance.volume=1;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    async function sendToken(){
+      const token=document.getElementById('inputBox').value.trim();
+      if(!token) return;
+
+      // User bubble
+      chat.innerHTML+=`<div class="chat-message user"><div class="bubble">${token}</div></div>`;
+      chat.lastElementChild.scrollIntoView({behavior:'smooth',block:'end'});
+
+      // AI scanning bubble
+      chat.innerHTML+=`<div class="chat-message ai"><div class="bubble" id="ai-bubble">🔎 Scanning token...</div></div>`;
+      chat.lastElementChild.scrollIntoView({behavior:'smooth',block:'end'});
+
+      scanAvatar(2000);
+
+      try{
+        const res=await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`);
+        const data=await res.json();
+
+        const aiBubble=chat.querySelector('.ai:last-child .bubble');
+
+        if(data.pairs && data.pairs.length>0){
+          const pair=data.pairs[0];
+          const name=pair.baseToken.name;
+          const symbol=pair.baseToken.symbol;
+          const price=pair.priceUsd;
+          const liquidity=pair.liquidity?.usd??"N/A";
+          const mc=pair.fdv??"N/A";
+          const chartUrl=pair.url;
+          const logo=pair.info?.imageUrl||"https://cryptologos.cc/logos/placeholder.png";
+
+          typeWriter(aiBubble,`✅ Scan complete! ${name} (${symbol})\nPrice: $${price}\nMarket Cap: $${formatNumber(mc)}`,40,()=>speak(`${name} token scanned. Price is ${price} dollars. Market Cap is ${formatNumber(mc)} dollars.`));
+
+        }else{
+          typeWriter(aiBubble,"❌ Couldn’t find this token.",40,()=>speak("Could not find this token."));
+        }
+      }catch(err){
+        typeWriter(chat.querySelector('.ai:last-child .bubble'),"⚠️ Error fetching data.",40,()=>speak("Error fetching data."));
+      }
+
+      document.getElementById('inputBox').value="";
+    }
   </script>
 </body>
   </html>
