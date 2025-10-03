@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>AI Token Scanner</title>
+  <title>AI Token Scanner + Chat</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <style>
+    /* ---------- layout & colors (kept your style) ---------- */
     body {
       font-family: Arial, sans-serif;
       margin: 0;
@@ -14,16 +15,15 @@
       flex-direction: column;
       height: 100vh;
     }
-
-    #chat {    
-      flex: 1;      
-      overflow-y: auto;      
+    #chat {
+      flex: 1;
+      overflow-y: auto;
       padding: 15px;
-      padding-top: 120px; /* space for avatar */
-      max-width: 95%;      
-      margin: auto;      
-      word-wrap: break-word;      
-      scroll-behavior: smooth;        
+      padding-top: 120px;
+      max-width: 95%;
+      margin: auto;
+      word-wrap: break-word;
+      scroll-behavior: smooth;
     }
 
     /* Chat bubbles */
@@ -63,7 +63,7 @@
     }
     .token-card:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(78, 93, 255, 0.7); }
     .token-card h2 { margin: 10px 0; font-size: 22px; color: #00ffd5; text-shadow: 0 0 8px rgba(0,255,213,0.8); }
-    .token-card img { width: 60px; height: 60px; border-radius: 50%; margin-bottom: 10px; border: 2px solid #4e5dff; box-shadow: 0 0 12px rgba(78,93,255,0.6); }
+    .token-card img { width: 60px; height: 60px; border-radius: 50%; margin-bottom: 10px; border: 2px solid #4e5dff; box-shadow: 0 0 12px rgba(78,93,255,0.6); object-fit:cover; }
     .stat { font-size: 18px; margin: 6px 0; }
     .price { color: #4eff9c; }
     .mc { color: #ff5dff; }
@@ -75,10 +75,11 @@
     }
     .chart-btn:hover { background: #6a78ff; box-shadow: 0 0 15px rgba(106,120,255,0.7); }
 
-    #inputArea { display: flex; padding: 10px; background: #1c1c2b; border-top: 2px solid #4e5dff; }
-    #inputBox { flex: 1; padding: 10px; border-radius: 8px; border: none; outline: none; margin-right: 10px; }
+    #inputArea { display: flex; padding: 10px; background: #1c1c2b; border-top: 2px solid #4e5dff; gap:8px; align-items:center;}
+    #inputBox { flex: 1; padding: 10px; border-radius: 8px; border: none; outline: none; margin-right: 10px; background:#0b0b12; color:#fff; }
     button { padding: 10px 16px; border-radius: 8px; border: none; outline: none; background: #4e5dff; color: white; cursor: pointer; transition: 0.2s; }
     button:hover { background: #6a78ff; }
+    .chip { display:inline-block; padding:6px 10px; border-radius:12px; background:#111; border:1px solid rgba(255,255,255,0.04); margin:4px; cursor:pointer; }
 
     /* Avatar */
     #avatar {
@@ -100,6 +101,8 @@
     @keyframes floatY { 0%,100%{transform:translateX(-50%) translateY(0);} 50%{transform:translateX(-50%) translateY(-8px);} }
     @keyframes scanShake { 0%,100%{transform:translateX(-50%) translateY(0);} 25%{transform:translateX(calc(-50% - 5px));} 50%{transform:translateX(calc(-50% + 5px));} 75%{transform:translateX(calc(-50% - 5px));} }
     @keyframes glow { from {text-shadow:0 0 10px #00ffd5,0 0 20px #4e5dff;} to {text-shadow:0 0 20px #00ffd5,0 0 30px #4e5dff;} }
+    /* small responsive */
+    @media (max-width:480px){ .token-card{ max-width:92%; padding:14px;} .token-card img{ width:48px; height:48px; } }
   </style>
 </head>
 <body>
@@ -107,15 +110,20 @@
   <div id="chat"></div>
 
   <div id="inputArea">
-    <input id="inputBox" placeholder="Enter token address">
-    <button onclick="sendToken()">Scan</button>
+    <input id="inputBox" placeholder="Enter token address, ask a question, paste a link, or type 'search: pancakeswap'">
+    <button id="sendBtn">Send</button>
+    <button id="voiceBtn" title="Use speech input">🎤</button>
   </div>
 
   <script>
+    /* ---------- elements ---------- */
     const avatar = document.getElementById('avatar');
     const chat = document.getElementById('chat');
+    const inputBox = document.getElementById('inputBox');
+    const sendBtn = document.getElementById('sendBtn');
+    const voiceBtn = document.getElementById('voiceBtn');
 
-    // Draggable avatar
+    /* ---------- avatar drag ---------- */
     let isDragging = false, offsetX, offsetY;
     avatar.addEventListener('mousedown', e => {
       isDragging = true;
@@ -125,14 +133,13 @@
       avatar.style.cursor = 'grabbing';
     });
     document.addEventListener('mousemove', e => {
-      if(isDragging) {
+      if (isDragging) {
         avatar.style.left = `${e.clientX - offsetX}px`;
         avatar.style.top = `${e.clientY - offsetY}px`;
       }
     });
-    document.addEventListener('mouseup', () => { if(isDragging){ isDragging=false; avatar.style.transition=''; avatar.style.cursor='grab'; } });
-
-    // Mobile touch support
+    document.addEventListener('mouseup', () => { if (isDragging) { isDragging = false; avatar.style.transition = ''; avatar.style.cursor = 'grab'; } });
+    // touch
     avatar.addEventListener('touchstart', e => {
       isDragging = true;
       offsetX = e.touches[0].clientX - avatar.getBoundingClientRect().left;
@@ -140,108 +147,307 @@
       avatar.style.transition = 'none';
     });
     document.addEventListener('touchmove', e => {
-      if(isDragging) {
+      if (isDragging && e.touches && e.touches[0]) {
         avatar.style.left = `${e.touches[0].clientX - offsetX}px`;
         avatar.style.top = `${e.touches[0].clientY - offsetY}px`;
       }
     });
-    document.addEventListener('touchend', () => { isDragging=false; avatar.style.transition=''; });
+    document.addEventListener('touchend', () => { isDragging = false; avatar.style.transition = ''; });
 
+    /* ---------- UI helpers ---------- */
+    function scrollToBottom() {
+      chat.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+    function addUserBubble(text) {
+      chat.innerHTML += `<div class="chat-message user"><div class="bubble">${escapeHtml(text)}</div></div>`;
+      scrollToBottom();
+    }
+    function addAIBubble(text, id = null) {
+      const safe = escapeHtml(text);
+      if (id) {
+        chat.innerHTML += `<div class="chat-message ai"><div class="bubble" id="${id}">${safe}</div></div>`;
+      } else {
+        chat.innerHTML += `<div class="chat-message ai"><div class="bubble">${safe}</div></div>`;
+      }
+      scrollToBottom();
+      return chat.querySelector('.ai:last-child .bubble');
+    }
+    function escapeHtml(s){ return (s+'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    /* ---------- avatar scanning animation ---------- */
     function scanAvatar(duration=2000){
       avatar.classList.remove('idle');
       avatar.classList.add('scanning');
-      setTimeout(()=>{avatar.classList.remove('scanning'); avatar.classList.add('idle');},duration);
+      setTimeout(()=>{ avatar.classList.remove('scanning'); avatar.classList.add('idle'); }, duration);
     }
 
-    function formatNumber(num){
-      if(num==="N/A") return num;
-      num = Number(num);
-      if(num>=1e9) return (num/1e9).toFixed(2)+"B";
-      if(num>=1e6) return (num/1e6).toFixed(2)+"M";
-      if(num>=1e3) return (num/1e3).toFixed(2)+"k";
-      return num.toString();
-    }
-
-    function typeWriter(element, text, speed=40, callback){
-      element.innerHTML="";
-      let i=0;
-      function typing(){
-        if(i<text.length){ element.innerHTML+=text.charAt(i); i++; setTimeout(typing,speed);}
-        else if(callback) callback();
-      }
-      typing();
-    }
-
+    /* ---------- speech ---------- */
     function speak(text){
-      if('speechSynthesis' in window){
-        const utterance=new SpeechSynthesisUtterance(text);
-        utterance.lang='en-US'; utterance.pitch=1.2; utterance.rate=1; utterance.volume=1;
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.pitch = 1.05;
+        utterance.rate = 1;
+        utterance.volume = 1;
+        window.speechSynthesis.cancel(); // stop previous
         window.speechSynthesis.speak(utterance);
       }
     }
 
-    async function sendToken() {
-      const tokenBox = document.getElementById('inputBox');
-      const token = tokenBox.value.trim();
-      if (!token) return;
+    /* ---------- tiny typewriter for ai bubble ---------- */
+    function typeWriter(element, text, speed=24, callback){
+      element.innerHTML = "";
+      let i = 0;
+      (function typing(){
+        if (i < text.length) { element.innerHTML += text.charAt(i); i++; setTimeout(typing, speed); }
+        else if (callback) callback();
+      })();
+    }
 
-      // Clear input
-      tokenBox.value = "";
-      tokenBox.focus();
+    /* ---------- number formatting ---------- */
+    function formatNumber(num){
+      if (num === "N/A" || num === null || num === undefined || isNaN(Number(num))) return num === 0 ? "0" : "N/A";
+      num = Number(num);
+      if (num >= 1e12) return (num/1e12).toFixed(2) + "T";
+      if (num >= 1e9) return (num/1e9).toFixed(2) + "B";
+      if (num >= 1e6) return (num/1e6).toFixed(2) + "M";
+      if (num >= 1e3) return (num/1e3).toFixed(2) + "k";
+      return num.toString();
+    }
 
-      // Add user bubble
-      chat.innerHTML += `<div class="chat-message user"><div class="bubble">${token}</div></div>`;
-      chat.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    /* ---------- Detection helpers ---------- */
+    const ethAddressRegex = /^(0x)?[0-9a-fA-F]{40}$/;
+    function looksLikeAddress(s) {
+      if (!s) return false;
+      const raw = s.trim();
+      if (raw.startsWith('0x')) return ethAddressRegex.test(raw);
+      return ethAddressRegex.test(raw);
+    }
+    function isENS(s) {
+      return typeof s === 'string' && s.trim().toLowerCase().endsWith('.eth');
+    }
+    function isUrl(s) {
+      try { const u = new URL(s); return u.protocol === 'http:' || u.protocol === 'https:'; }
+      catch(e){ return false; }
+    }
 
-      // Add AI scanning bubble
-      chat.innerHTML += `<div class="chat-message ai"><div class="bubble" id="ai-bubble">🔎 Scanning token...</div></div>`;
-      chat.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    /* ---------- main send handler ---------- */
+    async function handleMessage(raw) {
+      const text = raw.trim();
+      if (!text) return;
+      addUserBubble(text);
 
-      scanAvatar(3000);
+      // quick UI feedback bubble
+      const aiBubbleEl = addAIBubble("🔎 thinking...");
+      scrollToBottom();
+
+      // If starts with search: do quick search
+      if (/^search:\s*/i.test(text)) {
+        const query = text.replace(/^search:\s*/i, '').trim();
+        typeWriter(aiBubbleEl, `🔎 Searching for "${query}" and opening results...`, 24, () => {
+          speak(`Searching for ${query}`);
+          window.open(`https://duckduckgo.com/?q=${encodeURIComponent(query)}`, '_blank');
+        });
+        return;
+      }
+
+      // If URL -> quick preview reply + quick action
+      if (isUrl(text)) {
+        typeWriter(aiBubbleEl, `🔗 Got a link — I can't fetch page metadata (CORS), but you can open it.`, 24, () => {
+          const linkHtml = `
+            <div style="margin-top:8px;text-align:left">
+              <div class="chip" onclick="window.open('${escapeToJsString(text)}','_blank')">Open Link</div>
+              <div class="chip" onclick="copyToClipboard('${escapeToJsString(text)}')">Copy Link</div>
+              <div class="chip" onclick="addSystemMsg('Tip: try sending a token address to scan it')">Tip</div>
+            </div>
+          `;
+          aiBubbleEl.innerHTML += linkHtml;
+        });
+        speak('Link received');
+        return;
+      }
+
+      // If looks like an address or ENS -> treat as token scan
+      if (looksLikeAddress(text) || isENS(text)) {
+        // normalize address to 0x prefix if needed
+        let address = text;
+        if (!address.startsWith('0x') && looksLikeAddress(address)) address = '0x' + address;
+        await scanToken(address);
+        return;
+      }
+
+      // If message contains the word 'scan' and a possible address inside -> extract
+      const maybeAddress = (text.match(/0x[0-9a-fA-F]{40}/) || [null])[0];
+      if (maybeAddress) {
+        await scanToken(maybeAddress);
+        return;
+      }
+
+      // Otherwise fallback to rule-based friendly replies
+      const reply = generateFallbackResponse(text);
+      typeWriter(aiBubbleEl, reply, 22, () => speak(stripHtml(reply)));
+      return;
+    }
+
+    /* ---------- helper to escape for inline onclick JS ---------- */
+    function escapeToJsString(s) {
+      return (s+'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/\n/g,'\\n');
+    }
+
+    /* ---------- small system message helper for chips ---------- */
+    function addSystemMsg(text) {
+      addAIBubble(text);
+      speak(text);
+    }
+
+    /* ---------- copy helper ---------- */
+    function copyToClipboard(txt) {
+      if (!txt) return;
+      navigator.clipboard?.writeText(txt).then(()=> addSystemMsg('Copied to clipboard ✅')).catch(()=> addSystemMsg('Could not copy'));
+    }
+
+    /* ---------- Fallback assistant (rule-based) ---------- */
+    function generateFallbackResponse(text) {
+      const t = text.toLowerCase();
+      // greetings
+      if (/\b(hi|hello|hey|yo|greetings)\b/.test(t)) {
+        return "Hey! I'm your crypto assistant. Paste a token address to scan it, or type `search: <term>` to open a web search.";
+      }
+      if (/\b(thanks|thank you|ty)\b/.test(t)) {
+        return "You're welcome — glad to help! Drop another address or ask me to `search:` something.";
+      }
+      // price question pattern
+      if (/\bprice of ([a-z0-9\-_]{2,20})\b/.test(t) || /\bwhat(?:'s| is) the price of\b/.test(t)) {
+        return "If you give me the token **address** I can fetch the price and liquidity. Or try `search: <symbol>` and I'll open web results.";
+      }
+      // how to use
+      if (/\bhow (do i|can i|to)\b/.test(t) || /\bhow to\b/.test(t)) {
+        return "To scan a token, paste its contract address (0x...) or ENS (example.eth). For web searches, use `search: your query`. For charts, click the chart button on token cards.";
+      }
+      // short fun replies
+      if (t.length < 20) {
+        const fun = [
+          "Nice. Want me to scan a token address?",
+          "Tell me more, or paste an address and I'll scan it.",
+          "Crypto mood: 🚀 or 🧯 ?",
+          "I can scan addresses, preview links, or open web searches with `search:`."
+        ];
+        return fun[Math.floor(Math.random()*fun.length)];
+      }
+      // default
+      return "I can help with token scans (paste address), open web searches (`search:`), or preview links. What would you like me to do?";
+    }
+
+    function stripHtml(s) { return (s+'').replace(/<[^>]*>?/gm, ''); }
+
+    /* ---------- token scan (your existing dexscreener usage, enhanced) ---------- */
+    async function scanToken(addressOrENS) {
+      const aiBubbleEl = chat.querySelector('.ai:last-child .bubble');
+      typeWriter(aiBubbleEl, "🔎 Scanning token... (this may take a second)", 24);
+      scanAvatar(2200);
 
       try {
-        const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token}`);
+        // NOTE: if ENS, you may want to resolve server-side; here we pass ENS as-is to API and hope it resolves
+        const endpoint = `https://api.dexscreener.com/latest/dex/tokens/${encodeURIComponent(addressOrENS)}`;
+        const res = await fetch(endpoint);
+        if (!res.ok) {
+          typeWriter(aiBubbleEl, `⚠️ Dexscreener returned ${res.status}. Try again or provide the token address.`, 24, () => speak('Error fetching token.'));
+          return;
+        }
         const data = await res.json();
 
         if (data.pairs && data.pairs.length > 0) {
+          // pick best pair (first)
           const pair = data.pairs[0];
-          const name = pair.baseToken.name || "Unknown";
-          const symbol = pair.baseToken.symbol || "N/A";
+          const name = (pair.baseToken && pair.baseToken.name) ? pair.baseToken.name : (pair.name || "Unknown");
+          const symbol = (pair.baseToken && pair.baseToken.symbol) ? pair.baseToken.symbol : (pair.symbol || "N/A");
           const price = pair.priceUsd ?? "N/A";
-          const liquidity = pair.liquidity?.usd ?? "N/A";
-          const mc = pair.fdv ?? "N/A";
-          const chartUrl = pair.url ?? "#";
-          const logo = pair.info?.imageUrl || "https://cryptologos.cc/logos/placeholder.png";
+          const liquidity = pair.liquidity?.usd ?? pair.liquidity ?? "N/A";
+          const mc = pair.fdv ?? pair.marketCap ?? "N/A";
+          const chartUrl = pair.url ?? pair.dexUrl ?? '#';
+          const logo = pair.baseToken?.logoUri || pair.baseToken?.info?.imageUrl || pair.info?.imageUrl || (pair.token0?.logoURI || '');
+          const tokenAddress = (pair.baseToken && pair.baseToken.address) || (pair.address) || addressOrENS;
 
-          const aiBubble = chat.querySelector('.ai:last-child .bubble');
+          // replace the existing "scanning..." bubble with "Scan complete!"
+          typeWriter(aiBubbleEl, `✅ Scan complete! ${name} (${symbol})`, 30);
 
-          typeWriter(aiBubble, "✅ Scan complete!", 40, () => {
-            // Insert token card separately
-            const cardHTML = `
-              <div class="chat-message ai">
-                <div class="token-card">
-                  <img src="${logo}" alt="${name}">
-                  <h2>${name} (${symbol})</h2>
-                  <div class="stat price">Price: $${price}</div>
-                  <div class="stat mc">Market Cap: ${formatNumber(mc)}</div>
-                  <div class="stat liq">Liquidity: ${formatNumber(liquidity)}</div>
-                  <a class="chart-btn" href="${chartUrl}" target="_blank">View Chart</a>
+          // Build token card with actions
+          const cardHTML = `
+            <div class="chat-message ai">
+              <div class="token-card">
+                <img src="${escapeHtml(logo || 'https://cryptologos.cc/logos/placeholder.png')}" alt="${escapeHtml(name)}" onerror="this.src='https://cryptologos.cc/logos/placeholder.png'">
+                <h2>${escapeHtml(name)} (${escapeHtml(symbol)})</h2>
+                <div class="stat price">Price: $${escapeHtml(Number(price).toFixed(6) || price)}</div>
+                <div class="stat mc">Market Cap: ${escapeHtml(formatNumber(mc))}</div>
+                <div class="stat liq">Liquidity: ${escapeHtml(formatNumber(liquidity))}</div>
+
+                <div style="margin-top:10px;">
+                  <a class="chart-btn" href="${escapeHtml(chartUrl)}" target="_blank" rel="noopener">View Chart</a>
+                  <div style="display:inline-block; margin-left:8px;">
+                    <button onclick="copyToClipboard('${escapeToJsString(tokenAddress)}')">Copy Addr</button>
+                  </div>
+                </div>
+
+                <div style="margin-top:12px; text-align:center;">
+                  <div class="chip" onclick="window.open('${escapeHtml(chartUrl)}','_blank')">Open on Dexscreener</div>
+                  <div class="chip" onclick="addSystemMsg('Try: send \"Explain ${escapeHtml(symbol)}\" or paste another address')">Next steps</div>
                 </div>
               </div>
-            `;
-            chat.innerHTML += cardHTML;
-            speak(`${name} token scanned. Price is ${price} dollars. Market Cap is ${formatNumber(mc)} dollars.`);
-            chat.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
-          });
+            </div>
+          `;
+          chat.innerHTML += cardHTML;
+          scrollToBottom();
+          speak(`${name} scanned. Price ${price} dollars.`);
+          return;
         } else {
-          const aiBubble = chat.querySelector('.ai:last-child .bubble');
-          typeWriter(aiBubble, "❌ Couldn’t find this token.", 40, () => { speak("Could not find this token."); });
+          typeWriter(aiBubbleEl, "❌ Couldn’t find pairs for this token on Dexscreener. Try a different address.", 30, () => speak("Could not find this token."));
+          return;
         }
       } catch (err) {
-        const aiBubble = chat.querySelector('.ai:last-child .bubble');
-        typeWriter(aiBubble, "⚠️ Error fetching data.", 40, () => { speak("Error fetching data."); });
+        console.error(err);
+        const aiBubbleEl2 = chat.querySelector('.ai:last-child .bubble');
+        typeWriter(aiBubbleEl2, "⚠️ Error fetching data. Check your network or try again.", 30, () => speak("Error fetching data."));
       }
     }
+
+    /* ---------- wire up UI events ---------- */
+    sendBtn.addEventListener('click', () => { handleMessage(inputBox.value); inputBox.value=''; inputBox.focus(); });
+    inputBox.addEventListener('keydown', e => { if (e.key === 'Enter') { handleMessage(inputBox.value); inputBox.value=''; } });
+
+    // speech input (basic)
+    voiceBtn.addEventListener('click', () => {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        addSystemMsg('Speech recognition not supported in this browser.');
+        return;
+      }
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const rec = new SpeechRecognition();
+      rec.lang = 'en-US';
+      rec.interimResults = false;
+      rec.onresult = (ev) => {
+        const t = ev.results[0][0].transcript;
+        inputBox.value = t;
+        handleMessage(t);
+      };
+      rec.onerror = (e) => addSystemMsg('Speech recognition error');
+      rec.start();
+    });
+
+    /* ---------- startup greeting ---------- */
+    (function startup(){
+      addAIBubble("Hello! I'm your token scanner + assistant. Paste a token address to scan it, drop a link, or type 'search: <query>'.");
+      speak("Hello! I'm ready.");
+    })();
+
+    /* ---------- OPTIONAL: For later - server-side OpenAI integration ----------
+      // Do not put API keys in client-side JS. If you want real GPT replies,
+      // implement a small server endpoint that accepts the user message and
+      // proxies it to OpenAI using your server key, then returns the result.
+      // Example (pseudo):
+      // POST /api/chat { message }
+      // Server: call OpenAI with secret key and forward response.
+    --------------------------------------------------------------------------- */
+
   </script>
 </body>
-  </html>
+</html>
